@@ -1,0 +1,76 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+public class TaskAllocation {
+    
+    static final int[] IMPORTANCIA = {3, 2, 3, 4, 4, 5, 2};
+    static final int[] HORAS = {7, 3, 7, 8, 5, 9, 1};
+    static final int TOTAL_HOURS = 90;
+    
+    static class Solution {
+        int[] tasks;
+        int score;
+        
+        Solution(int[] tasks) {
+            this.tasks = tasks;
+            calculateScore();
+        }
+        
+        void calculateScore() {
+            int sumImportance = 0;
+            int sumHours = 0;
+            for (int task : tasks) {
+                sumImportance += IMPORTANCIA[task];
+                sumHours += HORAS[task];
+            }
+            
+            if (sumHours <= TOTAL_HOURS && sumHours >= TOTAL_HOURS - 5) {
+                this.score = sumImportance;
+            } else {
+                this.score = -1;
+            }
+        }
+    }
+    
+    static Solution hillClimbing() {
+        Random rand = new Random();
+        
+        // Inicializar solução aleatoriamente
+        int[] initialTasks = new int[10];
+        for (int i = 0; i < 10; i++) {
+            initialTasks[i] = rand.nextInt(7);
+        }
+        
+        Solution current = new Solution(initialTasks);
+        Solution neighbour;
+        
+        while (true) {
+            List<Solution> neighbours = new ArrayList<>();
+            
+            // Gerar vizinhos
+            for (int i = 0; i < 10; i++) {
+                int[] newTasks = Arrays.copyOf(current.tasks, 10);
+                newTasks[i] = rand.nextInt(7); // alterando uma tarefa
+                neighbours.add(new Solution(newTasks));
+            }
+            
+            neighbour = neighbours.stream().max((a, b) -> a.score - b.score).orElse(null);
+            
+            if (neighbour.score > current.score) {
+                current = neighbour;
+            } else {
+                break; // Se nenhum vizinho é melhor, pare
+            }
+        }
+        
+        return current;
+    }
+    
+    public static void main(String[] args) {
+        Solution solution = hillClimbing();
+        System.out.println("Tarefas escolhidas: " + Arrays.toString(solution.tasks));
+        System.out.println("Score (Importância): " + solution.score);
+    }
+}
